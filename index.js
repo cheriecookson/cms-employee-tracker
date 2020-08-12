@@ -1,101 +1,169 @@
-const db = require('./db');
 const inquirer = require('inquirer');
 require("console.table");
-
-
-
+const connection = require("./db/db.js");
 
 
 const mainPrompts = function () {
     inquirer.prompt([
         {
-        type: 'list',
-        name: 'leadingQ',
-        message: "What would you like to do?",
-        choices: [
-            'View All Employees', 
-            'View All Roles', 
-            'View All Departments',
-            'Add Employees',
-            'Add Department',
-            'Add Role',
-            'Update Employee Role',
-            'Remove Employee'
-        ]
-      }
-    ])
-    .then(res => {
-        let option = res.choice;
-        switch (option) {
-          case 'View All Employees':
-            viewEmployees();
-            break;
-          case 'View All Roles':
-            viewRoles();
-            break;
-          case 'View All Departments':
-            viewDepartments();
-            break;
-          case 'Add Employees':
-            addEmployee();
-            break;
-          case 'Add Department':
-            addDepartment();
-            break;
-          case 'Add Role':
-            addRole();
-            break;
-          case 'Update Employee Role':
-              updateEmployeeRole();
-              break; 
-          case 'Remove Employee':
-            removeEmployee();
-            break;
-          default:
-            quit();
+            type: 'list',
+            name: 'option',
+            message: "What would you like to do?",
+            choices: [
+                'View All Employees',
+                'View All Roles',
+                'View All Departments',
+                'Add Employees',
+                'Add Department',
+                'Add Role',
+                'Update Employee Role',
+                'Remove Employee',
+                'Quit'
+            ]
         }
-      }
-      )
-    }
-    
-    // View all employees
-    function viewEmployees() {
-      db.findAllEmployees()
-        .then(([rows]) => {
-          let employees = rows;
-          console.log("\n");
-          console.table(employees);
-        })
-        .then(() => loadMainPrompts());
-    }
-    
-    // View all employees that belong to a department
-    function viewEmployeesByDepartment() {
-      db.findAllDepartments()
-        .then(([rows]) => {
-          let departments = rows;
-          const departmentChoices = departments.map(({ id, name }) => ({
-            name: name,
-            value: id
-          }));
-    
-          prompt([
-            {
-              type: "list",
-              name: "departmentId",
-              message: "Which department would you like to see employees for?",
-              choices: departmentChoices
+    ])
+        .then(res => {
+            let option = res.option;
+            switch (option) {
+                case 'View All Employees':
+                    viewEmployees();
+                    break;
+                case 'View All Roles':
+                    viewRoles();
+                    break;
+                case 'View All Departments':
+                    viewDepartments();
+                    break;
+                case 'Add Employees':
+                    addEmployee();
+                    break;
+                case 'Add Department':
+                    addDepartment();
+                    break;
+                case 'Add Role':
+                    addRole();
+                    break;
+                case 'Update Employee Role':
+                    updateEmployeeRole();
+                    break;
+                case 'Remove Employee':
+                    removeEmployee();
+                    break;
+                default:
+                    quit();
             }
-          ])
-            .then(res => db.findAllEmployeesByDepartment(res.departmentId))
-            .then(([rows]) => {
-              let employees = rows;
-              console.log("\n");
-              console.table(employees);
-            })
-            .then(() => loadMainPrompts())
-        });
+        }
+        )
+};
 
+const viewEmployees = () => {
+    console.log('Viewing all employees...\n');
+    connection.query('SELECT * FROM employee', function (err, option) {
+        if (err) throw err;
+        console.table(option);
+        mainPrompts();
+    });
 }
 
-mainPrompts()
+const viewRoles = () => {
+    console.log('Viewing all roles...\n');
+    connection.query('SELECT * FROM role', function (err, option) {
+        if (err) throw err;
+        console.table(option);
+        mainPrompts();
+    });
+}
+
+
+const viewDepartments = () => {
+    console.log('Viewing all departments...\n');
+    connection.query('SELECT * FROM department', function (err, option) {
+        if (err) throw err;
+        console.table(option);
+        mainPrompts();
+    });
+
+}
+// first_name, last_name, role_id, manager_id
+
+const addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'first_name',
+            message: "What is your employee's first name?",
+        },
+        {
+            type: 'input',
+            name: 'last_name',
+            message: "What is your employee's last name?",
+        },
+        {
+            type: 'input',
+            name: 'role_id',
+            message: "What is your employee's role id?",
+        },
+        {
+            type: 'input',
+            name: 'manager_id',
+            message: "What is your employee's manager's id?",
+        }
+
+    ])
+    .then(res => {
+        const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);`
+        // const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${res.first_name}', '${res.last_name}', ${res.role_id}, ${res.manager_id});`
+        connection.query(query, Object.values(res), function (err, option) {
+            if (err) throw err;
+            console.table(option);
+            mainPrompts();
+        });
+    })
+}
+
+const addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'name',
+            message: "What is the department name?",
+        }
+    ])
+    .then(res => {
+        const query = `INSERT INTO department (name) VALUES (?);`
+        // const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${res.first_name}', '${res.last_name}', ${res.role_id}, ${res.manager_id});`
+        connection.query(query, Object.values(res), function (err, option) {
+            if (err) throw err;
+            console.table(option);
+            mainPrompts();
+        });
+    })
+}
+
+const addRole = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'name',
+            message: "What is the department name?",
+        }
+    ])
+    .then(res => {
+        const query = `INSERT INTO department (name) VALUES (?);`
+        // const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${res.first_name}', '${res.last_name}', ${res.role_id}, ${res.manager_id});`
+        connection.query(query, Object.values(res), function (err, option) {
+            if (err) throw err;
+            console.table(option);
+            mainPrompts();
+        });
+    })
+}
+
+
+
+
+const quit = () => {
+    process.exit(0);
+}
+
+mainPrompts();

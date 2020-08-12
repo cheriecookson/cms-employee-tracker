@@ -16,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/cheriecookson/cms-employee-tracker/issues"
   },
-  "homepage": "https://github.com/cheriecookson/cms-employee-tracker#readme"
+  "homepage": "https://github.com/cheriecookson/cms-employee-tracker#readme",
+  "dependencies": {
+    "inquirer": "^7.3.3",
+    "mysql2": "^2.1.0"
+  }
 }
